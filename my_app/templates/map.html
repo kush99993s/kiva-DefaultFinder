@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Leaflet Quick Start Guide Example</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- css links -->
+	<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" />
+	<!-- js links -->
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+	<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+</head>
+<body>
+	<div id="map" style="width: 1000px; height: 1000px"></div>
+	<div id= "where"></div>
+	<div id = "country"> </div>	
+	<script>
+		window.latlong= [];
+		window.countryGeoJSON = {{ map_geo_json | safe }}
+
+
+		var map = L.map('map').setView([0, 0], 4); // 4 here is magnification level shown in first time
+
+		L.tileLayer('https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png', {
+			maxZoom: 22	, // how mnay time you can magnify from largest map. After 22 zoom, map is not working due to more magnificaiton
+			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+				'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+				'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+			id: 'examples.map-i875mjb7'
+		}).addTo(map);
+		
+		
+		
+		var popup = L.popup();
+
+		function onMapClick(e) {
+			popup.setLatLng(e.latlng)
+				 .setContent("You clicked the map at " + e.latlng.toString())
+				 .openOn(map);
+			window.latlong.push(e.latlng);
+			$('#country').html(e.latlng)
+
+			
+			$.ajax({'url'			: '/process',
+	                'data'			: JSON.stringify(e.latlng),
+    	            'type'			: 'POST',
+        	        'contentType'	: 'application/json',
+            		'success'		: function (data) {
+            			$('#where').html(data);
+
+					},
+                    'error': function (request, status, error) {
+                    	console.log('Oh no!! Something went wrong.');
+                	}
+        	});
+
+		}
+		function getColor(d) {
+    		return 	d > 0.2 	? '#800026' :
+           		   	d > 0.1  	? '#BD0026' :
+           			d > 0.05  	? '#E31A1C' :
+           			d > 0.01 	? '#FC4E2A' :
+           			d > 0.005  	? '#FD8D3C' :
+           			d > 0.002   	? '#FEB24C' :
+           			d > 0.001   	? '#FED976' :
+                    			  '#FFFF' ;
+		}
+
+		function style(feature) {
+		    return {
+		        fillColor: getColor(feature.density),
+		        weight: 2,
+		        opacity: 1,
+		        color: 'white',
+		        dashArray: '3',
+		        fillOpacity: 0.7
+			    };
+			}
+
+
+		var newLayer = L.geoJson(window.countryGeoJSON, {style: style}).addTo(map);
+		newLayer.on('click', onMapClick);
+		map.on('click', onMapClick);
+		
+
+	
+		</script>
+		
+	
+		
+</body>
+</html>

@@ -1,0 +1,324 @@
+
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- css links -->
+    
+    <!-- js links -->
+    
+    <title>Find defaulter</title>
+    <!-- Bootstrap Core CSS -->
+
+    <!-- Custom Fonts -->
+    <link href="static/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" />
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+        <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <!-- MetisMenu CSS -->
+    <link href="static/css/metisMenu.min.css" rel="stylesheet">
+    <!-- Timeline CSS -->
+    <link href="static/css/timeline.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="static/css/sb-admin-2.css" rel="stylesheet">
+    <!-- Morris Charts CSS -->
+    <link href="static/css/morris.css" rel="stylesheet">
+    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+   
+
+</head>
+
+<body>
+    <style type="text/css">
+            .checklist > ul {
+                margin-left: 0;
+                list-style-type: none;
+            }
+            .checklist label {
+                font-size: 1.1em;
+                line-height: 1.1em;
+            }
+
+            .checklist label input[type="checkbox"] {
+                width: 1.1em;
+                height: 1.1em;
+                position: relative;
+                top: -0.2em;
+            }
+            .checklist fieldset {
+                margin-bottom: 2em;
+            }
+        </style>
+    <div id="wrapper">
+
+        <!-- Navigation -->
+        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">KivaSearchInfo</a>
+            </div>
+            <!-- /.navbar-header -->
+
+            
+            <!-- /.navbar-top-links -->
+
+            <div class="navbar-default sidebar" role="navigation">
+                <div class="sidebar-nav navbar-collapse">
+                    <ul class="nav" id="side-menu">
+                        <li>
+                            <a href="/"><i class="fa fa-dashboard fa-fw"></i> EDA</a>
+                        </li>
+                       
+                    </ul>
+                </div>
+                <!-- /.sidebar-collapse -->
+            </div>
+            <!-- /.navbar-static-side -->
+        </nav>
+
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header"> Model & Results</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+      
+            
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="panel panel-default">
+
+                        <div class="panel-heading">
+                            <i class="fa fa-bar-chart-o fa-fw"></i> Model selection
+                            <div class="pull-right">
+                                <div class="btn-group", id = "kush">
+                                    
+                                    <div id="result"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- /.panel-heading -->
+                        <div class="panel-body">
+                                <a >Select Input Features</a><br>
+                                <input name="sector" id="banner-role" type="checkbox" value="y"> Sector<br>
+                                <input name="funded_amount" id="banner-role" type="checkbox" value="y"> Funded Amount<br>
+                                <input name="activity" id="banner-role" type="checkbox" value="y"> Activity<br>
+                                <input name="country_code" id="banner-role" type="checkbox" value="y"> Country<br>
+                                <input name="lat" id="banner-role" type="checkbox" value="y"> Latitude <br>
+                                <input name="lender_count" id="banner-role" type="checkbox" value="y"> Lender Count<br>
+                                <input name="repayment_interval" id="banner-role" type="checkbox" value="y"> Repayment Interval<br>
+                                <input name="long" id="banner-role" type="checkbox" value="y"> Longitude <br> 
+                                <input name="entries" id="banner-role" type="checkbox" value="y"> Entries <br>     
+                                <input name="repayment_term" id="banner-role" type="checkbox" value="y"> Repayment Term <br>         
+                                <button id="go">Submit</button>
+                                <script>
+                                    $("#go").click(function() {
+                                        names = ["sector", "funded_amount", "activity", "country_code", "lat", "lender_count", "repayment_interval", "long", "entries","repayment_term"];
+                                        bool_lst = [];
+                                        lst = $(':checked');
+                                        lst.each(function(i) {
+                                            bool_lst.push(this.name);
+                                        });
+
+                                        function drawChart(tpr_fpr) {
+                                                
+                                                var data = google.visualization.arrayToDataTable(tpr_fpr);
+                                                console.log(data);
+
+                                                var options = {
+                                                  title: 'Company Performance',
+                                                  curveType: 'function',
+                                                  legend: { position: 'bottom' }
+                                                };
+
+                                                var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+                                                chart.draw(data, options);
+                                                
+                                            } 
+
+                                        $.ajax({
+                                            'url': '/data',
+                                            'data': JSON.stringify(bool_lst),
+                                            'type': 'POST',
+                                            'contentType': 'application/json',
+                                            'success': function (data) {
+                                                var JSONData = JSON.parse(data);
+                                                window.tpr = JSONData[0];
+                                                window.fpr = JSONData[1];
+                                                
+                                                console.log(fpr)
+                                                console.log(tpr)
+                                                tpr_fpr = [];
+                                                tpr_fpr.push(['tpr', 'fpr']);
+                                                 for (i=0; i<tpr.length; i++) {
+                                                    tpr_fpr.push([tpr[i], fpr[i]]);
+                                                }
+                                                google.setOnLoadCallback(drawChart);
+                                                drawChart(tpr_fpr);
+
+
+
+                                              
+                                                
+                                            },
+                                            'error': function (request, status, error) {
+                                                console.log('Oh no!! Something went wrong.');
+                                            }
+                                            
+                                        })
+                                        
+                                    });                               
+                                </script>              
+                            <!-- <div id="morris-area-chart"></div> -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-bar-chart-o fa-fw"></i> ROC curve
+                            <div class="pull-right">
+                                <div class="btn-group">
+                                     <div id="curve_chart" style="width: 900px; height: 500px"></div>
+                                     <div id="data_roc">    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-lg-4">
+                                    <div class="table-responsive">
+                                       
+                                    </div>
+                                    <!-- /.table-responsive -->
+                                </div>
+                                <!-- /.col-lg-4 (nested) -->
+                                <div class="col-lg-8">
+                                    <div id="morris-bar-chart"></div>
+                                </div>
+                                <!-- /.col-lg-8 (nested) -->
+                            </div>
+                            <!-- /.row -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-bar-chart-o fa-fw"></i> Feature importantce
+                            <div class="pull-right">
+                                <div class="btn-group">
+                                     <div id="feature"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-lg-4">
+                                    <div class="table-responsive">
+                                       
+                                    </div>
+                                    <!-- /.table-responsive -->
+                                </div>
+                                <!-- /.col-lg-4 (nested) -->
+                                <div class="col-lg-8">
+                                    <div id="morris-bar-chart"></div>
+                                </div>
+                                <!-- /.col-lg-8 (nested) -->
+                            </div>
+                            <!-- /.row -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                    
+                <!-- /.col-lg-8 -->
+                
+                <!-- /.col-lg-4 -->
+            </div>
+            <!-- /.row -->
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- jQuery -->
+    <script src="static/js/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="static/js/bootstrap.min.js"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="static/js/metisMenu.min.js"></script>
+
+    <!-- Morris Charts JavaScript -->
+    <script src="static/js/raphael-min.js"></script>
+    <script src="static/js/morris.min.js"></script>
+    <script src="static/js/morris-data.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="static/js/sb-admin-2.js"></script>
+     <script type="text/javascript"
+          src="https://www.google.com/jsapi?autoload={
+            'modules':[{
+              'name':'visualization',
+              'version':'1',
+              'packages':['corechart']
+            }]
+          }"></script>
+        
+    
+    // <script>
+    // google.setOnLoadCallback(drawChart);
+
+    //                                           function drawChart() {
+    //                                             window.tpr = [0.1,0.2,0.5,0.7,0.9]
+    //                                             window.fpr =[0.1,0.2, 0.6,0.68, 0.9]
+    //                                             tpr_fpr = []
+    //                                             tpr_fpr.push(['tpr', 'fpr'])
+    //                                              for (i=0; i<6; i++) {
+    //                                                 tpr_fpr.push([tpr[i], fpr[i]]);
+    //                                               }
+    //                                             var data = google.visualization.arrayToDataTable(
+    //                                               tpr_fpr
+    //                                              )
+    //                                             console.log(data)
+
+    //                                             var options = {
+    //                                               title: 'Company Performance',
+    //                                               curveType: 'function',
+    //                                               legend: { position: 'bottom' }
+    //                                             };
+
+    //                                             var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+    //                                             chart.draw(data, options);
+                                                
+    //                                         } 
+
+    // </script>                                    
+
+</body>
+
+</html>
